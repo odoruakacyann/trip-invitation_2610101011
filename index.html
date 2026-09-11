@@ -4,12 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>ごあんない</title>
+<!-- 検索避けメタタグ -->
+<meta name="robots" content="noindex, nofollow">
 <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
 <style>
-    /* 全体のリセットとベース設定 */
+    /* ▼ 空の色を時間で変えるための準備（CSS変数） ▼ */
+    :root {
+        --sky-top: #5cb3ff;
+        --sky-bottom: #b6e3ff;
+        --cloud-color: rgba(255, 255, 255, 0.9);
+    }
+
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
-        background-color: #1a1a1a; /* 最終的な暗い背景 */
+        background-color: #1a1a1a;
         font-family: 'Zen Maru Gothic', sans-serif;
         color: #3a352a;
         display: flex;
@@ -19,39 +27,101 @@
         overflow-x: hidden;
     }
 
-    /* =========================================
-       青空と雲のオープニング演出
-       ========================================= */
+    #lock-screen {
+        position: fixed;
+        top: 0; left: 0;
+        width: 100vw; height: 100vh;
+        background: #121212;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        color: #d1c7b7;
+        padding: 20px;
+        text-align: center;
+    }
+    .lock-box {
+        background: #1c1a17;
+        border: 2px dashed #4a4238;
+        padding: 30px 20px;
+        border-radius: 8px;
+        width: 100%;
+        max-width: 320px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+    }
+    .lock-box p {
+        font-size: 1rem;
+        margin-bottom: 20px;
+        line-height: 1.8;
+        color: #b5a999;
+    }
+    .lock-input {
+        width: 100%;
+        padding: 12px;
+        font-family: inherit;
+        font-size: 1.2rem;
+        text-align: center;
+        background: #2a2621;
+        border: 1px solid #5c5143;
+        color: #f0ebd9;
+        border-radius: 4px;
+        margin-bottom: 15px;
+        letter-spacing: 3px;
+    }
+    .lock-btn {
+        width: 100%;
+        padding: 12px;
+        background: #8a3c3c;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        font-family: inherit;
+        font-size: 1.1rem;
+        cursor: pointer;
+        transition: 0.2s;
+    }
+    .lock-btn:active { background: #6e2f2f; }
+    #lock-error {
+        color: #d9534f;
+        font-size: 0.85rem;
+        margin-top: 10px;
+        min-height: 20px;
+    }
+
+    #main-content {
+        display: none;
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+    }
+
     #sky-overlay {
         position: fixed;
         top: 0; left: 0;
         width: 100vw; height: 100vh;
-        background: linear-gradient(to bottom, #5cb3ff 0%, #b6e3ff 100%);
-        z-index: 5; /* ナビ(4)を隠し、チラシ(10)の下に配置 */
-        /* 3.5秒後（チラシ着地後）に暗黒へフェードアウト */
+        background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 100%);
+        z-index: 5;
         animation: fadeToSilentHill 3s 3.5s forwards;
         pointer-events: none;
         overflow: hidden;
     }
 
-    /* 雲のベーススタイル */
     .cloud {
         position: absolute;
-        background: rgba(255, 255, 255, 0.9);
+        background: var(--cloud-color);
         border-radius: 50px;
     }
     .cloud::before, .cloud::after {
         content: '';
         position: absolute;
-        background: rgba(255, 255, 255, 0.9);
+        background: var(--cloud-color);
         border-radius: 50%;
     }
-    /* 雲1（左から右へ） */
     .c1 { width: 120px; height: 40px; top: 15%; left: -150px; animation: cloudMove 25s linear infinite; }
     .c1::before { width: 60px; height: 60px; top: -30px; left: 20px; }
     .c1::after { width: 50px; height: 50px; top: -20px; right: 20px; }
     
-    /* 雲2（右から左へ） */
     .c2 { width: 100px; height: 35px; top: 30%; right: -120px; animation: cloudMoveRev 20s linear infinite; opacity: 0.8;}
     .c2::before { width: 50px; height: 50px; top: -25px; left: 15px; }
     .c2::after { width: 40px; height: 40px; top: -15px; right: 15px; }
@@ -59,15 +129,12 @@
     @keyframes cloudMove { 0% { transform: translateX(0); } 100% { transform: translateX(120vw); } }
     @keyframes cloudMoveRev { 0% { transform: translateX(0); } 100% { transform: translateX(-120vw); } }
 
-    /* サイレントヒル（裏世界）への変貌アニメーション */
     @keyframes fadeToSilentHill {
         0% { opacity: 1; filter: grayscale(0%); }
-        40% { opacity: 1; filter: grayscale(80%); background: #555; } /* モノクロっぽく褪せる */
-        100% { opacity: 0; filter: grayscale(100%); visibility: hidden; } /* 完全に消えて元の背景へ */
+        40% { opacity: 1; filter: grayscale(80%); background: #555; }
+        100% { opacity: 0; filter: grayscale(100%); visibility: hidden; }
     }
 
-
-    /* 上部のインデックス（チラシ選択） */
     #nav {
         width: 100%;
         max-width: 400px;
@@ -76,21 +143,22 @@
         padding: 10px;
         background: #111;
         color: #fff;
-        font-size: 0.8rem;
-        z-index: 4; /* 青空の下に隠しておく */
+        font-size: 0.75rem;
+        z-index: 4;
+        overflow-x: auto;
     }
     .nav-item {
-        padding: 5px 8px;
+        padding: 5px 6px;
         border-radius: 4px;
         background: #333;
         cursor: pointer;
         transition: 0.3s;
         text-align: center;
+        white-space: nowrap;
     }
     .nav-item.active { background: #8a3c3c; font-weight: bold; }
-    .nav-item.locked { opacity: 0.3; cursor: not-allowed; }
+    .nav-item.locked { opacity: 0.3; cursor: not-allowed; display: none; }
 
-    /* チラシ本体 */
     #flyer-container {
         width: 92%;
         max-width: 400px;
@@ -110,35 +178,20 @@
         border-radius: 2px 15px 3px 20px / 15px 5px 20px 3px;
         transform: rotate(-1.5deg);
         position: relative;
-        z-index: 10; /* 青空より上に配置 */
+        z-index: 10;
         
-        /* 初期状態は見えないようにしておき、1秒後に降ってくる */
         opacity: 0;
         animation: fallFromSky 2s 1s cubic-bezier(0.25, 1, 0.4, 1) forwards;
     }
 
-    /* 空から降ってくる動き */
     @keyframes fallFromSky {
-        0% {
-            opacity: 0;
-            transform: translateY(-120vh) rotate(25deg) scale(0.8);
-        }
+        0% { opacity: 0; transform: translateY(-120vh) rotate(25deg) scale(0.8); }
         10% { opacity: 1; }
-        50% {
-            opacity: 1;
-            transform: translateY(20px) rotate(-4deg) scale(1.02);
-        }
-        75% {
-            opacity: 1;
-            transform: translateY(-5px) rotate(1deg) scale(1);
-        }
-        100% {
-            opacity: 1;
-            transform: translateY(0) rotate(-1.5deg) scale(1);
-        }
+        50% { opacity: 1; transform: translateY(20px) rotate(-4deg) scale(1.02); }
+        75% { opacity: 1; transform: translateY(-5px) rotate(1deg) scale(1); }
+        100% { opacity: 1; transform: translateY(0) rotate(-1.5deg) scale(1); }
     }
 
-    /* マスキングテープ */
     .tape {
         position: absolute;
         top: -12px;
@@ -153,58 +206,80 @@
         z-index: 10;
     }
 
-    /* チラシ内のコンテンツ */
     .flyer-page { display: none; animation: fadeIn 0.8s ease; }
     .flyer-page.active { display: block; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
 
-    /* テキストスタイル */
-    h1 { font-size: 1.4rem; text-align: center; margin-bottom: 30px; letter-spacing: 2px; border-bottom: 2px dashed #998c77; padding-bottom: 10px; }
-    p { font-size: 1.1rem; line-height: 2.2; margin-bottom: 20px; letter-spacing: 1px; }
+    h1 { font-size: 1.3rem; text-align: center; margin-bottom: 25px; letter-spacing: 2px; border-bottom: 2px dashed #998c77; padding-bottom: 10px; }
+    p { font-size: 1rem; line-height: 2; margin-bottom: 15px; letter-spacing: 1px; }
     .center { text-align: center; }
-    .small { font-size: 0.85rem; color: #555; }
-    .creepy-space { margin-top: 40px; margin-bottom: 40px; }
+    .small { font-size: 0.8rem; color: #555; }
     
-    /* 持ち物リスト */
-    .mochimono { background: rgba(255,255,255,0.3); padding: 20px; border: 1px solid #bbaea0; border-radius: 2px 8px 3px 5px; transform: rotate(1deg); }
+    .hotel-card {
+        background: rgba(255,255,255,0.45);
+        padding: 18px 15px;
+        border-radius: 4px;
+        border: 1px solid #bbaea0;
+        margin: 15px 0;
+        font-size: 0.95rem;
+        line-height: 1.8;
+    }
+    .hotel-title {
+        font-weight: bold;
+        font-size: 1.05rem;
+        color: #2b2620;
+        margin-bottom: 8px;
+        border-bottom: 1px dashed #bbaea0;
+        padding-bottom: 5px;
+        text-align: center;
+    }
+
+    .mochimono { background: rgba(255,255,255,0.3); padding: 15px; border: 1px solid #bbaea0; border-radius: 2px 8px 3px 5px; transform: rotate(1deg); margin-top: 15px; }
     .mochimono p { margin-bottom: 10px; }
-    .mochimono li { margin-left: 20px; margin-bottom: 12px; font-size: 1rem; list-style-type: square; }
+    .mochimono li { margin-left: 20px; margin-bottom: 8px; font-size: 0.95rem; list-style-type: square; }
     .mochimono li:first-child { font-weight: bold; color: #8a3c3c; }
 
-    /* 手書き風イラスト（SVG） */
-    .illustration { text-align: center; margin: 30px 0; }
-    .illustration svg { width: 120px; height: auto; opacity: 0.8; stroke: #4a453d; }
+    .illustration { text-align: center; margin: 15px 0; }
+    .illustration svg { width: 90px; height: auto; opacity: 0.8; stroke: #4a453d; }
     
-    /* クイズUI関連 */
-    #quiz-header { text-align: center; font-size: 0.9rem; margin-bottom: 20px; color: #555; border-bottom: 1px solid #bbaea0; padding-bottom: 10px; }
-    .quiz-question { margin-bottom: 25px; font-weight: bold; font-size: 1.1rem; }
+    #quiz-header { text-align: center; font-size: 0.85rem; margin-bottom: 15px; color: #555; border-bottom: 1px solid #bbaea0; padding-bottom: 8px; }
+    .quiz-question { margin-bottom: 15px; font-weight: bold; font-size: 0.9rem; line-height: 1.6; white-space: pre-wrap; }
     
-    .btn-grid { display: grid; gap: 10px; margin-bottom: 20px; }
+    .btn-grid { display: grid; gap: 10px; margin-bottom: 15px; }
     .btn-grid.col-2 { grid-template-columns: 1fr 1fr; }
     .btn-grid.col-1 { grid-template-columns: 1fr; }
     .quiz-btn {
-        background: rgba(255,255,255,0.5); border: 2px solid #bbaea0; padding: 15px; border-radius: 4px 8px 3px 6px;
-        font-family: inherit; font-size: 1rem; cursor: pointer; transition: 0.2s; color: #3a352a;
+        background: rgba(255,255,255,0.5); border: 2px solid #bbaea0; padding: 12px; border-radius: 4px 8px 3px 6px;
+        font-family: inherit; font-size: 0.95rem; cursor: pointer; transition: 0.2s; color: #3a352a; text-align: left;
     }
     .quiz-btn.selected { background: #d4c4a9; border-color: #8a3c3c; font-weight: bold; }
     .quiz-btn:disabled { opacity: 0.6; cursor: not-allowed; }
 
-    .select-group { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-    .select-row { display: flex; align-items: center; gap: 10px; }
+    .select-group { display: flex; flex-direction: column; gap: 8px; margin-bottom: 15px; }
+    .select-row { display: flex; align-items: center; gap: 8px; font-size: 0.9rem; }
     .select-row select {
-        flex: 1; padding: 10px; font-family: inherit; font-size: 1rem;
+        flex: 1; padding: 8px; font-family: inherit; font-size: 0.9rem;
         background: rgba(255,255,255,0.5); border: 1px solid #bbaea0; border-radius: 3px; color: #3a352a;
     }
     .select-row select:disabled { opacity: 0.6; cursor: not-allowed; }
 
+    .stone-input-container { text-align: center; margin: 20px 0; }
+    .stone-input {
+        width: 100%; max-width: 200px; padding: 10px; font-family: inherit; font-size: 1.2rem;
+        text-align: center; background-color: #d1c7b7; border: 3px solid #6b6255; border-radius: 4px;
+        box-shadow: inset 2px 2px 5px rgba(0,0,0,0.3); color: #2b2620; letter-spacing: 4px;
+    }
+    .stone-input:disabled { opacity: 0.7; }
+
     .submit-btn {
-        display: block; width: 100%; padding: 15px; background: #8a3c3c; color: #fff;
-        border: none; border-radius: 5px 2px 8px 3px; font-family: inherit; font-size: 1.2rem;
-        cursor: pointer; margin-top: 20px; box-shadow: 2px 3px 5px rgba(0,0,0,0.2);
+        display: block; width: 100%; padding: 12px; background: #8a3c3c; color: #fff;
+        border: none; border-radius: 5px 2px 8px 3px; font-family: inherit; font-size: 1.1rem;
+        cursor: pointer; margin-top: 15px; box-shadow: 2px 3px 5px rgba(0,0,0,0.2);
     }
     .submit-btn.next-btn { background: #4a453d; }
+    .show-result-btn { background: #5c5143; margin-top: 30px; font-size: 1rem;}
 
-    #message-area { text-align: center; font-size: 1.3rem; font-weight: bold; margin-top: 20px; min-height: 40px; }
+    #message-area { text-align: center; font-size: 1.1rem; font-weight: bold; margin-top: 15px; min-height: 30px; }
     .correct { color: #8a3c3c; }
     .incorrect { color: #4a453d; }
 
@@ -215,11 +290,11 @@
         border-radius: inherit; z-index: 20; opacity: 0; pointer-events: none; transition: 0.3s;
     }
     #confirm-overlay.show { opacity: 1; pointer-events: auto; }
-    .confirm-box { background: #fff; padding: 30px 20px; border: 2px dashed #998c77; border-radius: 5px; text-align: center; width: 80%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
-    .confirm-box p { font-size: 1.2rem; font-weight: bold; margin-bottom: 20px; color: #8a3c3c; }
+    .confirm-box { background: #fff; padding: 25px 20px; border: 2px dashed #998c77; border-radius: 5px; text-align: center; width: 85%; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .confirm-box p { font-size: 1.1rem; font-weight: bold; margin-bottom: 15px; color: #8a3c3c; }
     .confirm-btns { display: flex; gap: 10px; }
     .confirm-btns button {
-        flex: 1; padding: 12px; border: none; font-family: inherit; font-size: 1rem; cursor: pointer; border-radius: 4px;
+        flex: 1; padding: 10px; border: none; font-family: inherit; font-size: 1rem; cursor: pointer; border-radius: 4px;
     }
     .btn-yes { background: #8a3c3c; color: #fff; }
     .btn-no { background: #ccc; color: #333; }
@@ -231,220 +306,430 @@
     }
     #toast.show { opacity: 1; }
 
-    #confetti { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: hidden; z-index: 5; }
-    .paper { position: absolute; width: 10px; height: 10px; background: red; animation: fall 3s linear forwards; }
-    @keyframes fall { to { transform: translateY(500px) rotate(720deg); opacity: 0; } }
+    /* ▼ 挑戦状 オーバーレイ ▼ */
+    .popup-overlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: rgba(0,0,0,0.85); z-index: 2000;
+        display: none; justify-content: center; align-items: center;
+        transition: background 1.5s ease; /* 霧が晴れるアニメーション用 */
+    }
+    .popup-box {
+        background: #eaddc7; padding: 40px 25px; border-radius: 10px;
+        text-align: center; max-width: 340px; width: 90%;
+        border: 2px dashed #998c77; box-shadow: 0 15px 40px rgba(0,0,0,0.6);
+        animation: fadeIn 0.8s ease;
+        position: relative;
+        transition: all 1s ease; /* 箱のデザインが変わるアニメーション用 */
+    }
+    .popup-box h2 {
+        color: #8a3c3c; font-size: 1.4rem; margin-bottom: 20px; 
+        border-bottom: 1px solid #bbaea0; padding-bottom: 10px; letter-spacing: 2px;
+        transition: color 1s ease, border-color 1s ease;
+    }
+    .popup-text {
+        font-size: 1.05rem; line-height: 1.8; color: #3a352a; margin-bottom: 25px; font-weight: bold;
+    }
+
+    /* ▼ スマホ画面特化！遊園地（コースター・観覧車・テント）の背景 ▼ */
+    .result-overlay-clear {
+        background-color: rgba(135, 206, 235, 0.85) !important; 
+        /* 縦長画面(400x700)を前提に、中央の箱を避けて配置したSVG */
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 700"><filter id="blur"><feGaussianBlur stdDeviation="3"/></filter><g filter="url(%23blur)"><path d="M0 550 Q 200 520 400 550 L 400 700 L 0 700 Z" fill="rgba(255,255,255,0.3)"/><g stroke="rgba(255,255,255,0.45)" stroke-width="6" fill="none"><line x1="330" y1="200" x2="280" y2="400"/><line x1="330" y1="200" x2="380" y2="400"/><circle cx="330" cy="200" r="70"/><circle cx="330" cy="200" r="55"/><line x1="260" y1="200" x2="400" y2="200"/><line x1="330" y1="130" x2="330" y2="270"/><line x1="280" y1="150" x2="380" y2="250"/><line x1="280" y1="250" x2="380" y2="150"/><circle cx="330" cy="200" r="8" fill="rgba(255,255,255,0.45)"/></g><g fill="none"><path d="M 80 200 L 80 540 M 150 250 L 150 540 M 230 300 L 230 540 M 300 250 L 300 540 M 250 180 L 250 540 M 180 280 L 180 540" stroke="rgba(255,255,255,0.25)" stroke-width="4"/><path d="M -10 200 L 80 200 Q 120 200 150 250 Q 180 300 230 300 Q 280 300 300 250 Q 320 180 250 180 Q 180 180 180 280 Q 180 380 280 400 Q 350 420 420 350" stroke="rgba(255,255,255,0.6)" stroke-width="6"/></g><g><path d="M 30 480 L 130 480 L 80 430 Z" fill="rgba(255,255,255,0.45)"/><rect x="40" y="480" width="80" height="40" fill="rgba(255,255,255,0.25)"/><line x1="50" y1="480" x2="50" y2="520" stroke="rgba(255,255,255,0.4)" stroke-width="3"/><line x1="80" y1="480" x2="80" y2="520" stroke="rgba(255,255,255,0.4)" stroke-width="3"/><line x1="110" y1="480" x2="110" y2="520" stroke="rgba(255,255,255,0.4)" stroke-width="3"/></g></g></svg>') !important;
+        background-size: cover !important;
+        background-position: center center !important;
+        background-repeat: no-repeat !important;
+        backdrop-filter: blur(3px);
+    }
+    
+    .birthday-card {
+        background: #faf4e8 !important;
+        border: 3px solid #e59866 !important;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2) !important;
+    }
+    
+    /* ▼ メッセージカードに可愛い三角旗（ガーランド）を追加 ▼ */
+    .birthday-card::before {
+        content: '';
+        position: absolute;
+        top: -3px; left: -3px; right: -3px; height: 35px;
+        background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 30" preserveAspectRatio="none"><polygon points="0,0 20,0 10,25" fill="%23ffb3ba"/><polygon points="20,0 40,0 30,25" fill="%23ffdfba"/><polygon points="40,0 60,0 50,25" fill="%23ffffba"/><polygon points="60,0 80,0 70,25" fill="%23baffc9"/><polygon points="80,0 100,0 90,25" fill="%23bae1ff"/></svg>');
+        background-size: 100px 35px;
+        background-repeat: repeat-x;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+        z-index: 10;
+        opacity: 0;
+        animation: fadeIn 1s 0.5s forwards; /* 少し遅れてフワッと出る */
+    }
+
+    .birthday-card h2 {
+        color: #d35400 !important; 
+        border-bottom: 2px dotted #e59866 !important;
+        margin-top: 15px; /* ガーランドの分だけ下げる */
+    }
+
+    /* ▼ シャボン玉 ▼ */
+    .bubble {
+        position: absolute;
+        bottom: -30px;
+        border-radius: 50%;
+        background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.9), rgba(200, 240, 255, 0.2) 50%, rgba(255, 200, 220, 0.2) 80%);
+        border: 1px solid rgba(255, 255, 255, 0.8);
+        box-shadow: inset 0 0 15px rgba(255, 255, 255, 0.6), 0 2px 5px rgba(0,0,0,0.1);
+        pointer-events: none;
+        z-index: 2001;
+        opacity: 0;
+        animation: floatUp ease-in forwards;
+    }
+    
+    /* ▼ カラフルな風船 ▼ */
+    .balloon {
+        position: absolute;
+        bottom: -60px;
+        border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+        box-shadow: inset -5px -5px 15px rgba(0,0,0,0.1), 0 2px 5px rgba(0,0,0,0.1);
+        pointer-events: none;
+        z-index: 2001;
+        opacity: 0;
+        animation: floatUp ease-in forwards;
+    }
+    .balloon::after {
+        content: '';
+        position: absolute;
+        bottom: -15px; left: 50%; transform: translateX(-50%);
+        width: 1px; height: 15px;
+        background: rgba(255,255,255,0.7);
+    }
+
+    @keyframes floatUp {
+        0% { transform: translateY(0) scale(0.5) rotate(0deg); opacity: 0; }
+        15% { opacity: 0.9; }
+        100% { transform: translateY(-120vh) scale(1.2) rotate(20deg); opacity: 0; }
+    }
 </style>
 </head>
 <body>
 
-<!-- 青空の演出レイヤー -->
-<div id="sky-overlay">
-    <div class="cloud c1"></div>
-    <div class="cloud c2"></div>
+<div id="lock-screen">
+    <div class="lock-box">
+        <p>この先を見るには、<br>合言葉（生年月日 8桁）を入力してください。<br><span style="font-size:0.75rem; color:#888;">例：1995年10月10日なら 19951010</span></p>
+        <input type="password" id="pass-input" class="lock-input" placeholder="yyyymmdd" maxlength="8" pattern="\d*">
+        <button class="lock-btn" onclick="checkPassword()">ひらく</button>
+        <div id="lock-error"></div>
+    </div>
 </div>
 
-<div id="nav">
-    <div class="nav-item" data-index="0">9/12</div>
-    <div class="nav-item" data-index="1">9/19</div>
-    <div class="nav-item" data-index="2">9/26</div>
-    <div class="nav-item" data-index="3">10/3</div>
-    <div class="nav-item" data-index="4">10/10</div>
-</div>
+<div id="main-content">
+    <div id="sky-overlay">
+        <div class="cloud c1"></div>
+        <div class="cloud c2"></div>
+    </div>
 
-<div id="toast">このちらしは、もうすこしまってね。</div>
+    <!-- ナビゲーション -->
+    <div id="nav">
+        <div class="nav-item" data-index="0">9/12</div>
+        <div class="nav-item locked" data-index="1">9/19</div>
+        <div class="nav-item locked" data-index="2">9/26</div>
+        <div class="nav-item locked" data-index="3">10/3</div>
+        <div class="nav-item locked" data-index="4">10/10①</div>
+        <div class="nav-item locked" data-index="5">10/10②</div>
+        <div class="nav-item locked" data-index="6">10/10③</div>
+        <div class="nav-item locked" data-index="7">10/11④</div>
+        <div class="nav-item locked" data-index="8">10/11⑤</div>
+        <div class="nav-item locked" data-index="9">10/11⑥</div>
+    </div>
 
-<div id="flyer-container">
-    <div class="tape"></div>
-    <div id="confetti"></div>
+    <div id="toast">このチラシは、もうすこしまってね。</div>
 
-    <div id="confirm-overlay">
-        <div class="confirm-box">
-            <p>本当にこれでいい？<br><span style="font-size:0.8rem; color:#555; font-weight:normal;">（解答は一回きりです）</span></p>
-            <div class="confirm-btns">
-                <button class="btn-no" onclick="cancelSubmit()">ちょっとまって</button>
-                <button class="btn-yes" onclick="executeSubmit()">はい</button>
+    <div id="flyer-container">
+        <div class="tape"></div>
+
+        <div id="confirm-overlay">
+            <div class="confirm-box">
+                <p>本当にこれでいい？<br><span style="font-size:0.8rem; color:#555; font-weight:normal;">（解答は一回きりです）</span></p>
+                <div class="confirm-btns">
+                    <button class="btn-no" onclick="cancelSubmit()">ちょっとまって</button>
+                    <button class="btn-yes" onclick="executeSubmit()">はい</button>
+                </div>
             </div>
         </div>
-    </div>
 
-    <!-- 1枚目: 9/12 -->
-    <div class="flyer-page" id="page-0">
-        <h1>ごあんない</h1>
-        <p class="center creepy-space">
-            このチラシを手にしたあなた。。。<br><br>
-            特別な遊園地、<br>浜名湖パルパルへご招待。<br><br>
-            サイレントヒルでの<br>簡単な謎解きで<br>100倍の報酬をもらおう
-        </p>
-        <div class="illustration">
-            <svg viewBox="0 0 100 100" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="50" cy="40" r="30" />
-                <path d="M50 40 L50 10 M50 40 L50 70 M50 40 L20 40 M50 40 L80 40 M50 40 L28 18 M50 40 L72 62 M50 40 L72 18 M50 40 L28 62" />
-                <path d="M50 40 L35 90 M50 40 L65 90" />
-                <line x1="25" y1="90" x2="75" y2="90" />
-                <circle cx="50" cy="40" r="4" fill="#4a453d" />
-            </svg>
+        <!-- ▼ 1枚目: 9/12 ▼ -->
+        <div class="flyer-page" id="page-0">
+            <p class="center" style="font-size:0.85rem; color:#776d5e; margin-bottom:10px;">たまたま、このチラシを手にしたあなたへ。</p>
+            <p class="center" style="font-size:1.05rem; font-weight:bold; margin-bottom:15px;">
+                特別な遊園地、浜名湖パルパルへご招待。<br>
+                サイレントヒルでの簡単な謎解きで、<br>100倍の報酬をもらおう<br>
+                <span style="font-size:0.95rem; color:#8a3c3c; display:block; margin:15px 0; line-height:1.6; border: 2px dashed #bbaea0; padding: 10px; border-radius: 4px; background: rgba(255,255,255,0.4);">
+                    『限定ご当地グルメに甘いもの、辛いもの、<br>みーんな実質無料！！』
+                </span>
+                <span style="display:inline-block; margin-top:8px; font-size:0.95rem; color:#8a3c3c;">10月10日出発、翌10月11日パルパルへ。</span>
+            </p>
+            <div class="illustration">
+                <svg viewBox="0 0 100 100" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="50" cy="40" r="30" />
+                    <path d="M50 40 L50 10 M50 40 L50 70 M50 40 L20 40 M50 40 L80 40 M50 40 L28 18 M50 40 L72 62 M50 40 L72 18 M50 40 L28 62" />
+                    <path d="M50 40 L35 90 M50 40 L65 90" />
+                    <line x1="25" y1="90" x2="75" y2="90" />
+                    <circle cx="50" cy="40" r="4" fill="#4a453d" />
+                </svg>
+            </div>
+            <div class="mochimono">
+                <p class="center small">もちもの</p>
+                <ul>
+                    <li>スペイン帰りのけんこうなからだ</li>
+                    <li>歩きやすい恰好</li>
+                    <li>一泊二日の旅に耐えられる荷物</li>
+                </ul>
+            </div>
+            <p class="center small" style="margin-top:20px; color:#887c6b;">※つぎのチラシは 9/19 にでます。</p>
         </div>
-        <p class="center">
-            2026年10月10日・11日<br>
-            一泊二日の旅へ
-        </p>
-        <div class="mochimono creepy-space">
-            <p class="center small">もちもの</p>
-            <ul>
-                <li>スペイン帰りのけんこうなからだ</li>
-                <li>歩きやすい恰好</li>
-                <li>一泊二日の旅に耐えられる荷物</li>
-            </ul>
+
+        <!-- 2枚目: 9/19 -->
+        <div class="flyer-page" id="page-1">
+            <h1>最初の移動について</h1>
+            <p class="center" style="margin: 25px 0;">
+                10月10日の朝、はじめの目的地に<br>新大阪から新幹線で向かいます。
+            </p>
+            <div class="illustration">
+                <svg viewBox="0 0 100 50" fill="none" stroke-width="2" stroke-linecap="round">
+                    <path d="M 10 40 Q 10 10, 40 10 L 80 10 Q 95 10, 95 30 L 95 40 Z" />
+                    <circle cx="30" cy="25" r="4" />
+                    <circle cx="50" cy="25" r="4" />
+                    <circle cx="70" cy="25" r="4" />
+                    <line x1="20" y1="40" x2="20" y2="45" />
+                    <line x1="80" y1="40" x2="80" y2="45" />
+                    <line x1="5" y1="45" x2="95" y2="45" />
+                </svg>
+            </div>
+            <p class="center" style="margin-top: 25px;">
+                ねぼうしないでね<br>
+                朝はちょっとはやいです
+            </p>
+            <p class="center small" style="margin-top:30px; color:#887c6b;">※つぎのチラシは 9/26 にでます。</p>
+        </div>
+
+        <!-- 3枚目: 9/26 -->
+        <div class="flyer-page" id="page-2">
+            <h1>宿泊先</h1>
+            <p class="center" style="margin-bottom: 12px; font-size: 0.95rem;">
+                10月10日の夜はこちらにお泊まりします。
+            </p>
+            <div class="hotel-card">
+                <div class="hotel-title">くれたけインプレミアム静岡アネックス</div>
+                <p style="font-size:0.9rem; margin-bottom:6px;">📍 最寄駅から徒歩10分</p>
+                <p style="font-size:0.9rem; margin-bottom:6px;">🚪 お部屋は2部屋どちらも洋室でとっています</p>
+                <p style="font-size:0.9rem; margin-bottom:6px;">🍳 朝食：バイキング</p>
+                <p style="font-size:0.85rem; color:#8a3c3c; margin-top:8px; border-top:1px dotted #bbaea0; padding-top:6px;">※ごめんね、禁煙のお部屋が取れなかったです💦</p>
+            </div>
+            <p class="center small" style="margin-top:20px; color:#887c6b;">※つぎのチラシは 10/3 にでます。</p>
+        </div>
+
+        <!-- 4枚目: 10/3 -->
+        <div class="flyer-page" id="page-3">
+            <h1>今回の目的地</h1>
+            <p class="center" style="margin-bottom: 20px;">
+                これは何の場所でしょう？
+            </p>
+            <div class="illustration" style="display:flex; justify-content:center; gap:10px;">
+                <svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round">
+                    <path d="M10 30 L30 30 L25 15 L15 15 Z" />
+                    <path d="M25 15 Q35 15, 30 22" />
+                    <path d="M15 10 Q 20 0, 25 10" stroke-dasharray="2 2" />
+                </svg>
+                <svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round">
+                    <path d="M5 20 Q 15 5, 25 20 T 35 20" />
+                    <circle cx="12" cy="16" r="1" fill="#4a453d" />
+                </svg>
+                <svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round">
+                    <line x1="5" y1="20" x2="35" y2="20" />
+                    <line x1="10" y1="20" x2="10" y2="35" />
+                    <line x1="20" y1="20" x2="20" y2="35" />
+                    <line x1="30" y1="20" x2="30" y2="35" />
+                </svg>
+            </div>
+            <p class="center" style="margin-top: 25px; font-weight: bold; color: #8a3c3c; line-height: 1.8;">
+                10月10日、気をつけてきてね。<br>
+                待ってます。
+            </p>
+        </div>
+
+        <!-- 5枚目〜10枚目: 10/10〜10/11 クイズ -->
+        <div class="flyer-page" id="page-4">
+            <h1>なぞとき 第1問</h1>
+            <div id="quiz-container-0"></div>
+        </div>
+        <div class="flyer-page" id="page-5">
+            <h1>なぞとき 第2問</h1>
+            <div id="quiz-container-1"></div>
+        </div>
+        <div class="flyer-page" id="page-6">
+            <h1>なぞとき 第3問</h1>
+            <div id="quiz-container-2"></div>
+        </div>
+        <div class="flyer-page" id="page-7">
+            <h1>なぞとき 第4問</h1>
+            <div id="quiz-container-3"></div>
+        </div>
+        <div class="flyer-page" id="page-8">
+            <h1>なぞとき 第5問</h1>
+            <div id="quiz-container-4"></div>
+        </div>
+        <div class="flyer-page" id="page-9">
+            <h1>なぞとき さいごの問題</h1>
+            <div id="quiz-container-5"></div>
+            <button id="show-result-again-btn" class="submit-btn show-result-btn" style="display:none;" onclick="showFinalResult()">結果をもういちど見る</button>
         </div>
     </div>
+</div>
 
-    <!-- 2枚目: 9/19 -->
-    <div class="flyer-page" id="page-1">
-        <h1>ごあんない</h1>
-        <p class="center creepy-space">
-            10月10日の朝、<br>早い新幹線で静岡へ向かいます。
-        </p>
-        <div class="illustration">
-            <svg viewBox="0 0 100 50" fill="none" stroke-width="2" stroke-linecap="round">
-                <path d="M 10 40 Q 10 10, 40 10 L 80 10 Q 95 10, 95 30 L 95 40 Z" />
-                <circle cx="30" cy="25" r="4" />
-                <circle cx="50" cy="25" r="4" />
-                <circle cx="70" cy="25" r="4" />
-                <line x1="20" y1="40" x2="20" y2="45" />
-                <line x1="80" y1="40" x2="80" y2="45" />
-                <line x1="5" y1="45" x2="95" y2="45" />
-            </svg>
+<!-- ▼ 問題①を開いた時に出る「挑戦状」オーバーレイ ▼ -->
+<div id="challenge-overlay" class="popup-overlay">
+    <div class="popup-box">
+        <h2>【 挑 戦 状 】</h2>
+        <div class="popup-text">
+            まんまと100倍の報酬に釣られたな！<br>
+            そんなうまい話があると思ったら<br>大間違いだ。<br><br>
+            ここから先は、君の知恵と記憶、運を試す<br>
+            ゲキムズ問題を６つ用意した！<br><br>
+            あの言葉通り<br>
+            <span style="color:#8a3c3c; font-size:1.05rem; display:inline-block; margin:5px 0;">『限定ご当地グルメに甘いもの、<br>辛いもの、みーんな実質無料！！』</span><br>
+            の報酬が欲しければ、<br>見事すべて解き明かしてみせろ。<br><br>
+            さあ、君にその資格があるか、<br>とくと見せてもらおう。
         </div>
-        <p class="center creepy-space">
-            ねぼうしないでね<br>
-            朝はちょっとはやいです
-        </p>
+        <button onclick="document.getElementById('challenge-overlay').style.display='none'" class="submit-btn" style="margin-top:0;">受けて立つ</button>
     </div>
+</div>
 
-    <!-- 3枚目: 9/26 -->
-    <div class="flyer-page" id="page-2">
-        <h1>ごあんない</h1>
-        <p class="center creepy-space">
-            10月10日は静岡でお泊まりします。
-        </p>
-        <div class="illustration">
-            <svg viewBox="0 0 100 60" fill="none" stroke-width="2" stroke-linecap="round">
-                <rect x="10" y="30" width="80" height="15" rx="2" />
-                <line x1="15" y1="45" x2="15" y2="55" />
-                <line x1="85" y1="45" x2="85" y2="55" />
-                <path d="M 20 30 Q 30 15, 45 30" />
-                <circle cx="35" cy="25" r="6" />
-                <path d="M 45 30 Q 60 10, 85 30" />
-                <path d="M 75 10 Q 80 5, 85 10 Q 80 15, 75 10" />
-            </svg>
-        </div>
-        <p class="center creepy-space">
-            一泊します<br>
-            10月10日の夜はこちら
-        </p>
-        <p class="center small creepy-space">次の日はいよいよ……</p>
-    </div>
-
-    <!-- 4枚目: 10/3 -->
-    <div class="flyer-page" id="page-3">
-        <h1>ごあんない</h1>
-        <p class="center creepy-space">
-            これは何の場所でしょう？
-        </p>
-        <div class="illustration" style="display:flex; justify-content:center; gap:10px;">
-            <svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round">
-                <path d="M10 30 L30 30 L25 15 L15 15 Z" />
-                <path d="M25 15 Q35 15, 30 22" />
-                <path d="M15 10 Q 20 0, 25 10" stroke-dasharray="2 2" />
-            </svg>
-            <svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round">
-                <path d="M5 20 Q 15 5, 25 20 T 35 20" />
-                <circle cx="12" cy="16" r="1" fill="#4a453d" />
-            </svg>
-            <svg viewBox="0 0 40 40" fill="none" stroke-width="2" stroke-linecap="round">
-                <line x1="5" y1="20" x2="35" y2="20" />
-                <line x1="10" y1="20" x2="10" y2="35" />
-                <line x1="20" y1="20" x2="20" y2="35" />
-                <line x1="30" y1="20" x2="30" y2="35" />
-            </svg>
-        </div>
-        <p class="center creepy-space">
-            おたのしみに。
-        </p>
-    </div>
-
-    <!-- 5枚目: 10/10 (謎解き) -->
-    <div class="flyer-page" id="page-4">
-        <h1>さいごのチラシ</h1>
-        <div id="quiz-header">
-            なぞとき<br>
-            <span id="quiz-progress-dots"></span><br>
-            第<span id="quiz-current-num">1</span>問 / 全6問
-        </div>
-        <div id="quiz-content"></div>
-        <button id="quiz-submit" class="submit-btn" onclick="requestSubmit()">こたえを確認</button>
-        <div id="message-area"></div>
+<!-- ▼ 全問解答後の結果発表オーバーレイ ▼ -->
+<div id="result-overlay" class="popup-overlay">
+    <div class="popup-box" id="result-box-element">
+        <h2>結果発表</h2>
+        <div id="result-text" class="popup-text"></div>
+        <button onclick="document.getElementById('result-overlay').style.display='none'" class="submit-btn" style="margin-top:0;">とじる</button>
     </div>
 </div>
 
 <script>
-const DEBUG_DATE = null; // 例: "2026-10-10"
+const CORRECT_BIRTHDAY = "19910912";
+
+function checkPassword() {
+    const inputVal = document.getElementById('pass-input').value.trim();
+    const errorArea = document.getElementById('lock-error');
+
+    if (inputVal === CORRECT_BIRTHDAY) {
+        document.getElementById('lock-screen').style.display = 'none';
+        document.getElementById('main-content').style.display = 'flex';
+        init();
+    } else {
+        errorArea.innerText = "ちがうみたい……";
+        document.getElementById('pass-input').value = '';
+    }
+}
+
+document.getElementById('pass-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        checkPassword();
+    }
+});
+
+// テストする時は、ここの日付を「2026-10-11T13:00:00+09:00」などに変えてください
+const DEBUG_DATE = ""; 
+
+let currentDate = DEBUG_DATE ? new Date(DEBUG_DATE).getTime() : new Date().getTime();
+
+function setSkyColor() {
+    const hour = new Date(currentDate).getHours();
+    
+    if (hour >= 16 && hour < 19) {
+        document.documentElement.style.setProperty('--sky-top', '#ff7e5f');
+        document.documentElement.style.setProperty('--sky-bottom', '#feb47b');
+        document.documentElement.style.setProperty('--cloud-color', 'rgba(255, 220, 200, 0.9)');
+    } else if (hour >= 19 || hour < 6) {
+        document.documentElement.style.setProperty('--sky-top', '#0b132b');
+        document.documentElement.style.setProperty('--sky-bottom', '#1c2541');
+        document.documentElement.style.setProperty('--cloud-color', 'rgba(100, 110, 130, 0.8)');
+    } else {
+        document.documentElement.style.setProperty('--sky-top', '#5cb3ff');
+        document.documentElement.style.setProperty('--sky-bottom', '#b6e3ff');
+        document.documentElement.style.setProperty('--cloud-color', 'rgba(255, 255, 255, 0.9)');
+    }
+}
+setSkyColor();
 
 const releaseDates = [
     new Date("2026-09-12T00:00:00+09:00").getTime(),
     new Date("2026-09-19T00:00:00+09:00").getTime(),
     new Date("2026-09-26T00:00:00+09:00").getTime(),
     new Date("2026-10-03T00:00:00+09:00").getTime(),
-    new Date("2026-10-10T00:00:00+09:00").getTime()
+    new Date("2026-10-10T11:00:00+09:00").getTime(),
+    new Date("2026-10-10T13:00:00+09:00").getTime(),
+    new Date("2026-10-10T15:00:00+09:00").getTime(),
+    new Date("2026-10-11T08:00:00+09:00").getTime(),
+    new Date("2026-10-11T11:00:00+09:00").getTime(),
+    new Date("2026-10-11T13:00:00+09:00").getTime() 
 ];
 
 const quizData = [
     {
         id: 1, type: "sort",
-        question: "SixTONESのメンバーを、年齢が上の順に並べてください。<br><span style='font-size:0.8rem; font-weight:normal;'>※現在年齢が非公開となっているメンバーは「3番目」に置くものとします。</span>",
-        options: ["京本大我", "田中樹", "髙地優吾", "松村北斗", "ジェシー", "森本慎太郎"],
-        correct: ["髙地優吾", "京本大我", "田中樹", "松村北斗", "ジェシー", "森本慎太郎"]
+        question: "SixTONESのメンバーを、年齢が上の順に並べろ。<br><span style='font-size:0.8rem; font-weight:normal;'>※現在年齢が非公開となっているメンバーは「3番目」に置くものとする。</span>",
+        options: ["髙地優吾", "田中樹", "森本慎太郎", "ジェシー", "松村北斗", "京本大我"],
+        correct: ["京本大我", "田中樹", "髙地優吾", "松村北斗", "ジェシー", "森本慎太郎"]
     },
     {
         id: 2, type: "choice", cols: 1,
-        question: "難読駅として知られる『特牛駅』。<br>この駅がある県の名所は、次のうちどれでしょう？",
+        question: "難読駅として知られる『特牛駅』。<br>この駅がある県の名所は、次のうちどれ？",
         options: ["① 忍野八海", "② 立石寺", "③ 備中松山城", "④ 秋芳洞"],
         correctIndex: 3 
     },
     {
-        id: 3, type: "choice", cols: 1,
-        question: "【仮の問題3】SixTONES「ワロタ」に関する問題文をここに入力します。",
-        options: ["選択肢A", "選択肢B", "選択肢C", "選択肢D"],
-        correctIndex: 0
+        id: 3, 
+        type: "text",
+        question: `古より伝わりし、禁忌の書。
+その漆黒の最深部に、泥土に眠る『白き混沌』を呼び覚ます術が記されている。
+
+『天と地、二つの真影を要石に連ねて刻め。
+天には、星々の軌跡より吉凶を見極める、預言の術を。
+地には、言霊を紡ぎ、命の糧を貪る、開かれたる洞を。
+天と地、其の真姿を一字にて顕せ。
+二つの真影が天より地へと連なりし時、浅はかなる者は、其の理を解かんとして足掻くだろう。
+音を滅ぼせ。
+肉眼を閉じ、無垢なる眼にて見定めよ。
+混沌は混ざり、うねり、異形へと成り果てる。』
+
+真実の銘を答えよ。`,
+        correctAnswers: ["とろろ", "トロロ"]
     },
     {
         id: 4, type: "choice", cols: 1,
-        question: "次の競走馬のうち、スペイン語で『新しい海岸』を意味する名前を持つのはどれでしょう？",
+        question: "SixTONESのコント番組「ワロタ！SEASON2」、<br>第三回でジェシーが京本大我に勧めた資金運用方法は次のうち？",
+        options: ["① アクティブ投資", "② インデックス投資", "③ 普通預金", "④ 新興国ウルトラアクティブ先物レバレッジファンド"],
+        correctIndex: 1
+    },
+    {
+        id: 5, type: "choice", cols: 1,
+        question: "次の競走馬のうち、スペイン語で『新しい海岸』を意味する名前を持つのはどれ？",
         options: ["① レイデオロ", "② イスラボニータ", "③ グランアレグリア", "④ コスタノヴァ"],
         correctIndex: 3 
     },
     {
-        id: 5, type: "choice", cols: 1,
-        question: "松村北斗が、過去のインタビューで『好きな食べ物』として答えていたものは、次のうちどれでしょう？",
+        id: 6, type: "choice", cols: 1,
+        question: "松村北斗が、過去のインタビューで『好きな食べ物』として答えていたものは、次のうちどれ？",
         options: ["① パクチー", "② 秋鮭", "③ キュウリ", "④ トマト"],
-        correctIndex: 3 
-    },
-    {
-        id: 6, type: "choice", cols: 2,
-        question: "徳島県と高知県、最高峰の標高が高いのはどっち？",
-        options: ["① 徳島県", "② 高知県"],
-        correctIndex: 0 
+        correctIndex: 1 
     }
 ];
 
-let currentDate = DEBUG_DATE ? new Date(DEBUG_DATE).getTime() : new Date().getTime();
 let maxUnlockedIndex = -1;
-let currentQuizIndex = 0;
-let userSelection = null; 
-let isAnswerSubmitted = false; 
+let savedQuizResults = {};
 
 function init() {
+    const localData = localStorage.getItem('SilentHillPalpalQuiz');
+    if (localData) {
+        savedQuizResults = JSON.parse(localData);
+    }
+
     for (let i = 0; i < releaseDates.length; i++) {
         if (currentDate >= releaseDates[i]) {
             maxUnlockedIndex = i;
@@ -454,8 +739,8 @@ function init() {
 
     const navItems = document.querySelectorAll('.nav-item');
     navItems.forEach((item, index) => {
-        if (index > maxUnlockedIndex) {
-            item.classList.add('locked');
+        if (index <= maxUnlockedIndex) {
+            item.classList.remove('locked');
         }
         item.addEventListener('click', () => {
             if (index <= maxUnlockedIndex) {
@@ -466,8 +751,11 @@ function init() {
         });
     });
 
-    showPage(maxUnlockedIndex);
-    if (maxUnlockedIndex === 4) renderQuiz();
+    for (let i = 0; i < quizData.length; i++) {
+        renderIndividualQuiz(i);
+    }
+
+    showPage(0);
 }
 
 function showPage(index) {
@@ -475,7 +763,17 @@ function showPage(index) {
     document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
     
     document.getElementById(`page-${index}`).classList.add('active');
-    document.querySelector(`.nav-item[data-index="${index}"]`).classList.add('active');
+    const targetNav = document.querySelector(`.nav-item[data-index="${index}"]`);
+    if(targetNav) targetNav.classList.add('active');
+
+    if (index === 4 && !localStorage.getItem('SilentHillChallengeSeen')) {
+        document.getElementById('challenge-overlay').style.display = 'flex';
+        localStorage.setItem('SilentHillChallengeSeen', 'true');
+    }
+
+    if (index === 9 && Object.keys(savedQuizResults).length === quizData.length) {
+        document.getElementById('show-result-again-btn').style.display = 'block';
+    }
 }
 
 function showToast() {
@@ -484,33 +782,20 @@ function showToast() {
     setTimeout(() => toast.classList.remove('show'), 2000);
 }
 
-function renderQuiz() {
-    if (currentQuizIndex >= quizData.length) {
-        showQuizComplete();
-        return;
-    }
-
-    const q = quizData[currentQuizIndex];
-    const container = document.getElementById('quiz-content');
-    userSelection = null; 
-    isAnswerSubmitted = false;
-    document.getElementById('message-area').innerHTML = '';
-    
-    document.getElementById('quiz-current-num').innerText = currentQuizIndex + 1;
-    let dots = '';
-    for(let i=0; i<quizData.length; i++){
-        dots += (i < currentQuizIndex) ? '● ' : (i === currentQuizIndex ? '◎ ' : '○ ');
-    }
-    document.getElementById('quiz-progress-dots').innerText = dots;
+function renderIndividualQuiz(qIdx) {
+    const q = quizData[qIdx];
+    const container = document.getElementById(`quiz-container-${qIdx}`);
+    if (!container) return;
 
     let html = `<div class="quiz-question">${q.question}</div>`;
+    const pastResult = savedQuizResults[qIdx];
 
     if (q.type === 'sort') {
         html += `<div class="select-group">`;
         for (let i = 0; i < q.options.length; i++) {
             html += `<div class="select-row">
                         <span>${i + 1}位</span>
-                        <select class="sort-select" data-index="${i}">
+                        <select class="sort-select-${qIdx}" data-index="${i}">
                             <option value="">▼ メンバーを選択</option>`;
             q.options.forEach(opt => {
                 html += `<option value="${opt}">${opt}</option>`;
@@ -522,41 +807,64 @@ function renderQuiz() {
         const colClass = q.cols === 2 ? 'col-2' : 'col-1';
         html += `<div class="btn-grid ${colClass}">`;
         q.options.forEach((opt, idx) => {
-            html += `<button class="quiz-btn choice-btn" data-val="${idx}">${opt}</button>`;
+            html += `<button class="quiz-btn choice-btn-${qIdx}" data-val="${idx}">${opt}</button>`;
         });
         html += `</div>`;
+    } else if (q.type === 'text') {
+        html += `<div class="stone-input-container">
+                    <input type="text" id="text-answer-input-${qIdx}" class="stone-input" placeholder="ここに入力" maxlength="3">
+                 </div>`;
     }
+
+    html += `<button id="quiz-submit-${qIdx}" class="submit-btn" onclick="requestSubmit(${qIdx})">こたえを確認</button>
+             <div id="message-area-${qIdx}" style="text-align:center; font-size:1.1rem; font-weight:bold; margin-top:15px; min-height:30px;"></div>`;
 
     container.innerHTML = html;
 
-    if (q.type === 'choice') {
-        document.querySelectorAll('.choice-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                if(isAnswerSubmitted) return; 
-                document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('selected'));
-                this.classList.add('selected');
-                userSelection = parseInt(this.getAttribute('data-val'));
-            });
-        });
-    }
+    if (pastResult) {
+        document.getElementById(`quiz-submit-${qIdx}`).style.display = 'none';
+        const msgArea = document.getElementById(`message-area-${qIdx}`);
+        msgArea.innerHTML = pastResult.correct ? `<span class="correct">せいかい！</span>` : `<span class="incorrect">ざんねん…！</span>`;
 
-    const submitBtn = document.getElementById('quiz-submit');
-    submitBtn.innerText = "こたえを確認";
-    submitBtn.className = "submit-btn";
-    submitBtn.onclick = requestSubmit;
+        if (q.type === 'sort') {
+            const selects = document.querySelectorAll(`.sort-select-${qIdx}`);
+            selects.forEach((s, idx) => {
+                s.value = pastResult.answer[idx];
+                s.disabled = true;
+            });
+        } else if (q.type === 'choice') {
+            document.querySelectorAll(`.choice-btn-${qIdx}`).forEach(btn => {
+                if (parseInt(btn.getAttribute('data-val')) === pastResult.answer) {
+                    btn.classList.add('selected');
+                }
+                btn.disabled = true;
+            });
+        } else if (q.type === 'text') {
+            const input = document.getElementById(`text-answer-input-${qIdx}`);
+            input.value = pastResult.answer;
+            input.disabled = true;
+        }
+    } else {
+        if (q.type === 'choice') {
+            document.querySelectorAll(`.choice-btn-${qIdx}`).forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll(`.choice-btn-${qIdx}`).forEach(b => b.classList.remove('selected'));
+                    this.classList.add('selected');
+                });
+            });
+        }
+    }
 }
 
-function requestSubmit() {
-    if(isAnswerSubmitted) {
-        currentQuizIndex++;
-        renderQuiz();
-        return;
-    }
-    const q = quizData[currentQuizIndex];
-    const msgArea = document.getElementById('message-area');
+let activeQuizIndexForSubmit = null;
+
+function requestSubmit(qIdx) {
+    if (savedQuizResults[qIdx]) return;
+    const q = quizData[qIdx];
+    const msgArea = document.getElementById(`message-area-${qIdx}`);
 
     if (q.type === 'sort') {
-        const selects = document.querySelectorAll('.sort-select');
+        const selects = document.querySelectorAll(`.sort-select-${qIdx}`);
         let hasEmpty = false;
         let selectedVals = [];
         selects.forEach(s => {
@@ -572,13 +880,21 @@ function requestSubmit() {
             return;
         }
     } else if (q.type === 'choice') {
-        if (userSelection === null) {
+        const selectedBtn = document.querySelector(`.choice-btn-${qIdx}.selected`);
+        if (!selectedBtn) {
             msgArea.innerHTML = `<span class="incorrect" style="font-size:1rem;">どれかひとつえらんでね</span>`;
+            return;
+        }
+    } else if (q.type === 'text') {
+        const inputElem = document.getElementById(`text-answer-input-${qIdx}`);
+        if (!inputElem || inputElem.value.trim() === "") {
+            msgArea.innerHTML = `<span class="incorrect" style="font-size:1rem;">文字を入力してね</span>`;
             return;
         }
     }
     
     msgArea.innerHTML = '';
+    activeQuizIndexForSubmit = qIdx;
     document.getElementById('confirm-overlay').classList.add('show');
 }
 
@@ -588,71 +904,135 @@ function cancelSubmit() {
 
 function executeSubmit() {
     document.getElementById('confirm-overlay').classList.remove('show');
-    isAnswerSubmitted = true; 
+    const qIdx = activeQuizIndexForSubmit;
+    if (qIdx === null) return;
 
-    const q = quizData[currentQuizIndex];
-    const msgArea = document.getElementById('message-area');
+    const q = quizData[qIdx];
+    const msgArea = document.getElementById(`message-area-${qIdx}`);
     let isCorrect = false;
+    let userAnswer = null;
 
-    document.querySelectorAll('.sort-select, .choice-btn').forEach(el => {
+    document.querySelectorAll(`.sort-select-${qIdx}, .choice-btn-${qIdx}, #text-answer-input-${qIdx}`).forEach(el => {
         el.disabled = true;
     });
 
     if (q.type === 'sort') {
-        const selects = document.querySelectorAll('.sort-select');
+        const selects = document.querySelectorAll(`.sort-select-${qIdx}`);
         let selectedVals = [];
         selects.forEach(s => selectedVals.push(s.value));
+        userAnswer = selectedVals;
         isCorrect = JSON.stringify(selectedVals) === JSON.stringify(q.correct);
-        
     } else if (q.type === 'choice') {
-        isCorrect = (userSelection === q.correctIndex);
+        const selectedBtn = document.querySelector(`.choice-btn-${qIdx}.selected`);
+        userAnswer = parseInt(selectedBtn.getAttribute('data-val'));
+        isCorrect = (userAnswer === q.correctIndex);
+    } else if (q.type === 'text') {
+        const val = document.getElementById(`text-answer-input-${qIdx}`).value.trim();
+        userAnswer = val;
+        isCorrect = q.correctAnswers.includes(val);
     }
 
-    const submitBtn = document.getElementById('quiz-submit');
-    submitBtn.innerText = "つぎへ";
-    submitBtn.className = "submit-btn next-btn";
+    savedQuizResults[qIdx] = { answer: userAnswer, correct: isCorrect };
+    localStorage.setItem('SilentHillPalpalQuiz', JSON.stringify(savedQuizResults));
+
+    const submitBtn = document.getElementById(`quiz-submit-${qIdx}`);
+    submitBtn.style.display = 'none';
 
     if (isCorrect) {
         msgArea.innerHTML = `<span class="correct">せいかい！</span>`;
-        fireConfetti();
-        const flyer = document.getElementById('flyer-container');
-        flyer.style.animation = 'none';
-        setTimeout(() => flyer.style.animation = 'fadeIn 0.5s ease', 10);
     } else {
         msgArea.innerHTML = `<span class="incorrect">ざんねん…！</span>`;
     }
-}
 
-function showQuizComplete() {
-    document.getElementById('quiz-header').style.display = 'none';
-    document.getElementById('quiz-submit').style.display = 'none';
-    document.getElementById('quiz-content').innerHTML = `
-        <div style="text-align:center; margin-top: 50px;">
-            <h2 style="color:#8a3c3c; margin-bottom: 20px;">ぜんぶおわりました</h2>
-            <p>10月10日、気をつけてきてね。<br>まっているよ。</p>
-            <div style="font-size:3rem; margin-top:20px; filter: grayscale(100%);">🎒</div>
-        </div>
-    `;
-    for(let i=0; i<3; i++) {
-        setTimeout(fireConfetti, i*500);
+    if (Object.keys(savedQuizResults).length === quizData.length) {
+        document.getElementById('show-result-again-btn').style.display = 'block'; 
+        setTimeout(showFinalResult, 800); 
     }
 }
 
-function fireConfetti() {
-    const container = document.getElementById('confetti');
-    const colors = ['#8a3c3c', '#d4c4a9', '#4a453d', '#998c77']; 
-    for (let i = 0; i < 20; i++) {
-        const paper = document.createElement('div');
-        paper.classList.add('paper');
-        paper.style.left = Math.random() * 100 + '%';
-        paper.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
-        paper.style.animationDuration = (Math.random() * 2 + 2) + 's';
-        container.appendChild(paper);
-        setTimeout(() => paper.remove(), 4000);
+// ▼ シャボン玉 ＆ カラフルな風船 を一緒に飛ばす関数 ▼
+function createCelebrationElements() {
+    const overlay = document.getElementById('result-overlay');
+    document.querySelectorAll('.bubble, .balloon').forEach(e => e.remove());
+    
+    // カラフルな風船の色
+    const balloonColors = ['#ffb3ba', '#ffdfba', '#ffffba', '#baffc9', '#bae1ff', '#e0b0ff'];
+
+    for (let i = 0; i < 40; i++) {
+        // 70%の確率でシャボン玉、30%の確率で風船を作る
+        let isBalloon = Math.random() > 0.7;
+        let el = document.createElement('div');
+        
+        if (isBalloon) {
+            el.className = 'balloon';
+            let bWidth = Math.random() * 15 + 25; // 25〜40px
+            el.style.width = bWidth + 'px';
+            el.style.height = (bWidth * 1.3) + 'px';
+            el.style.backgroundColor = balloonColors[Math.floor(Math.random() * balloonColors.length)];
+        } else {
+            el.className = 'bubble';
+            let size = Math.random() * 20 + 10; 
+            el.style.width = size + 'px';
+            el.style.height = size + 'px';
+        }
+        
+        el.style.left = (Math.random() * 100) + 'vw';
+        el.style.animationDuration = (Math.random() * 4 + 3) + 's'; 
+        el.style.animationDelay = (Math.random() * 1.5) + 's'; 
+        overlay.appendChild(el);
     }
 }
 
-init();
+// ▼ 結果発表 ▼
+function showFinalResult() {
+    const overlay = document.getElementById('result-overlay');
+    const resultBox = document.getElementById('result-box-element');
+    const textArea = document.getElementById('result-text');
+    
+    let totalCorrectCount = 0;
+    for (const key in savedQuizResults) {
+        if (savedQuizResults[key].correct) totalCorrectCount++;
+    }
+
+    // 「1ヶ月早い／遅い」の共通フレーズ
+const bdayText = "私の誕生日は1ヶ月『早く』<br>お祝いしてもらいましたが、<br>今回は1ヶ月『遅れ』の<br>お祝いということで！（笑）<br>改めて、お誕生日おめでとう！";
+
+    let msg = "";
+    switch(totalCorrectCount) {
+        case 6:
+            msg = `【 ６問正解 / 完全制覇 】<br><br>おめでとうございます！！<br>まさか全問正解されるとは思っていませんでした！（笑）<br>出題者は負けず嫌いなので悔しい気持ちもありますが、<br>○○さんに楽しんでもらえたらそれが一番です！<br><br>${bdayText}`;
+            break;
+        case 5:
+            msg = `【 ５問正解 】<br><br>惜しい！もうちょっとでしたね💦<br>でも、まさか5問も正解されるとは思ってませんでした。<br>流石彩里さんです！<br>楽しんでもらえたなら嬉しいです。<br><br>${bdayText}`;
+            break;
+        case 4:
+            msg = `【 ４問正解 】<br><br>なかなかやるな～。半分以上正解するとは(ﾟдﾟ)！<br>さすがの一言です！<br>楽しんでもらえたなら嬉しいです。<br><br>${bdayText}`;
+            break;
+        case 3:
+            msg = `【 ３問正解 】<br><br>確実に当ててほしい問題は、しっかり当ててきましたね～！<br>次は満点目指してリベンジ待ってます（笑）<br><br>${bdayText}`;
+            break;
+        case 2:
+            msg = `【 ２問正解 】<br><br>サイレントヒルの霧が濃すぎたか…！？（笑）<br>ちょっと私がマニアックな問題を作りすぎましたね💦<br>でも、最後まで謎解きに付き合ってくれてありがとう！<br><br>${bdayText}`;
+            break;
+        case 1:
+            msg = `【 １問正解 】<br><br>ちょっと難しかったかな！？<br>頑張って考えた甲斐があった！(ゲームマスター失格)。<br>また別のところでお祝いしますよ（笑）<br><br>${bdayText}`;
+            break;
+        case 0:
+            msg = `【 全問不正解… 】<br><br>これは。。。私とシェアしたかった説が出てきましたね<br>狙って100点取れる奴は狙って<br>0点も取れるからな（笑）<br>この分は次回還元ということで！<br><br>${bdayText}`;
+            break;
+    }
+    
+    textArea.innerHTML = msg;
+    
+    // オーバーレイを表示し、霧が晴れるエフェクトと風船・シャボン玉を開始
+    overlay.style.display = 'flex';
+    
+    setTimeout(() => {
+        overlay.classList.add('result-overlay-clear');
+        resultBox.classList.add('birthday-card');
+        createCelebrationElements();
+    }, 10);
+}
 </script>
 </body>
 </html>
